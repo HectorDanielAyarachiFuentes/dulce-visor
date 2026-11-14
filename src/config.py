@@ -3,8 +3,8 @@ import os
 
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
 
-LOGICAL_WIDTH = 425
-LOGICAL_HEIGHT = 38
+LOGICAL_WIDTH = 450
+LOGICAL_HEIGHT = 42
 HISTORY_LEN = 16
 
 # ==========================================
