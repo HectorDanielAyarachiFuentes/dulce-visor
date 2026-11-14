@@ -4,7 +4,7 @@ from collections import deque
 
 from .config import (
     LOGICAL_WIDTH, LOGICAL_HEIGHT, HISTORY_LEN,
-    SKINS, BANDERAS, DEFAULT_SKIN_ID, get_skin,
+    SKINS, BANDERAS, ANIMALES, DEFAULT_SKIN_ID, get_skin,
     load_config, save_config
 )
 from .window import (
@@ -174,6 +174,7 @@ class DulceVisor(tk.Tk):
             current_skin_id=self.current_skin_id,
             skins_dict=SKINS,
             banderas_dict=BANDERAS,
+            animales_dict=ANIMALES,
             on_clean_cb=self.on_clean_click,
             on_recenter_cb=self.recenter_on_taskbar,
             on_change_skin_cb=self.change_skin,

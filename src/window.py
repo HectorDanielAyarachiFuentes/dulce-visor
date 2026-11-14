@@ -116,18 +116,19 @@ def reassert_topmost(hwnd):
     except Exception:
         pass
 
-def show_native_context_menu(hwnd, current_skin_id, skins_dict, banderas_dict,
+def show_native_context_menu(hwnd, current_skin_id, skins_dict, banderas_dict, animales_dict,
                              on_clean_cb, on_recenter_cb, on_change_skin_cb, on_close_cb):
-    """Muestra menú contextual nativo con submenús de Skins y Banderas."""
+    """Muestra menú contextual nativo con submenús de Skins, Banderas y Animales."""
     try:
         h = wintypes.HWND(hwnd)
         hmenu = user32.CreatePopupMenu()
         menu_skins = user32.CreatePopupMenu()
         menu_banderas = user32.CreatePopupMenu()
+        menu_animales = user32.CreatePopupMenu()
 
         cmd_map = {}
 
-        # 1. Submenú de Skins (1001+)
+        # 1. Submenú de Skins Temáticas (1001+)
         skin_id_start = 1001
         for idx, (s_key, s_data) in enumerate(skins_dict.items()):
             c_id = skin_id_start + idx
@@ -143,12 +144,21 @@ def show_native_context_menu(hwnd, current_skin_id, skins_dict, banderas_dict,
             flags = MF_STRING | (MF_CHECKED if b_key == current_skin_id else MF_UNCHECKED)
             user32.AppendMenuW(menu_banderas, flags, c_id, b_data["name"])
 
+        # 3. Submenú de Animales con Cola y Orejitas (3001+)
+        animal_id_start = 3001
+        for idx, (a_key, a_data) in enumerate(animales_dict.items()):
+            c_id = animal_id_start + idx
+            cmd_map[c_id] = a_key
+            flags = MF_STRING | (MF_CHECKED if a_key == current_skin_id else MF_UNCHECKED)
+            user32.AppendMenuW(menu_animales, flags, c_id, a_data["name"])
+
         # Elementos principales
         user32.AppendMenuW(hmenu, MF_STRING, 101, "⚡ Optimizar Memoria RAM")
         user32.AppendMenuW(hmenu, MF_STRING, 102, "📌 Re-centrar en la barra")
         user32.AppendMenuW(hmenu, MF_SEPARATOR, 0, None)
 
-        # Agregar los dos submenús
+        # Agregar los tres submenús
+        user32.AppendMenuW(hmenu, MF_POPUP, ctypes.cast(menu_animales, ctypes.c_void_p).value, "🐾 Animales con Cola (3)")
         user32.AppendMenuW(hmenu, MF_POPUP, ctypes.cast(menu_skins, ctypes.c_void_p).value, "🎨 Temas y Skins (10)")
         user32.AppendMenuW(hmenu, MF_POPUP, ctypes.cast(menu_banderas, ctypes.c_void_p).value, "🚩 Banderas de Países (10)")
 
@@ -166,6 +176,7 @@ def show_native_context_menu(hwnd, current_skin_id, skins_dict, banderas_dict,
 
         user32.DestroyMenu(menu_skins)
         user32.DestroyMenu(menu_banderas)
+        user32.DestroyMenu(menu_animales)
         user32.DestroyMenu(hmenu)
 
         if cmd == 101:

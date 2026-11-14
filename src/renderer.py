@@ -1,4 +1,5 @@
 from PIL import Image, ImageDraw, ImageTk, ImageFont
+import math
 from .config import LOGICAL_WIDTH, LOGICAL_HEIGHT
 
 class VisorRenderer:
@@ -25,6 +26,142 @@ class VisorRenderer:
             self.font_main = ImageFont.load_default()
             self.font_title = ImageFont.load_default()
 
+        # Contador de animación para la colita
+        self.tail_anim_frame = 0
+
+    def draw_animal_accessories(self, draw, s, W, H, pad_x, pad_y, pill_h, r, skin):
+        animal_type = skin.get("animal")
+        if not animal_type:
+            return
+
+        self.tail_anim_frame = (self.tail_anim_frame + 1) % 60
+        # Movimiento oscilante suave para la colita
+        sway = math.sin(self.tail_anim_frame * (2 * math.pi / 30)) * (3 * s)
+
+        # -----------------------------------------------------------------
+        # 1. COLA (A la derecha de la barra)
+        # -----------------------------------------------------------------
+        tail_start_x = W - pad_x - 3 * s
+        tail_start_y = H // 2
+        tail_col = skin.get("tail_color", (244, 114, 182, 255))
+        tail_tip_col = skin.get("tail_tip", (255, 255, 255, 255))
+
+        if animal_type == "gato":
+            # Colita de gato con curva elegante hacia arriba y pompón suave
+            c1_x = tail_start_x + 10 * s
+            c1_y = tail_start_y - 2 * s + sway
+            c2_x = tail_start_x + 6 * s + sway
+            c2_y = pad_y - 12 * s
+            tip_x = tail_start_x - 2 * s + sway
+            tip_y = pad_y - 14 * s
+
+            # Dibujar trazo curvo de la cola
+            tail_points = [
+                (tail_start_x, tail_start_y),
+                (c1_x, c1_y),
+                (c2_x, c2_y),
+                (tip_x, tip_y)
+            ]
+            draw.line(tail_points, fill=tail_col, width=max(2, int(4.5 * s)), joint="curve")
+            # Punta blanca de la colita
+            draw.ellipse([tip_x - 3.5 * s, tip_y - 3.5 * s, tip_x + 3.5 * s, tip_y + 3.5 * s], fill=tail_tip_col)
+
+        elif animal_type == "perro":
+            # Colita de perro peluda y alegre meneándose hacia arriba
+            c1_x = tail_start_x + 12 * s + sway
+            c1_y = tail_start_y - 10 * s
+            tip_x = tail_start_x + 16 * s + sway * 1.5
+            tip_y = pad_y - 10 * s
+
+            draw.line([(tail_start_x, tail_start_y + 2*s), (c1_x, c1_y), (tip_x, tip_y)],
+                      fill=tail_col, width=max(2, int(5.5 * s)), joint="curve")
+            draw.ellipse([tip_x - 4 * s, tip_y - 4 * s, tip_x + 4 * s, tip_y + 4 * s], fill=tail_tip_col)
+
+        elif animal_type == "elefante":
+            # Colita pequeña de elefante con mechoncito al final
+            c1_x = tail_start_x + 8 * s
+            c1_y = tail_start_y + 6 * s + sway * 0.5
+            tip_x = tail_start_x + 10 * s
+            tip_y = tail_start_y + 14 * s + sway
+
+            draw.line([(tail_start_x, tail_start_y), (c1_x, c1_y), (tip_x, tip_y)],
+                      fill=tail_col, width=max(2, int(3.5 * s)), joint="curve")
+            # Mechón oscuro
+            draw.ellipse([tip_x - 3 * s, tip_y - 1 * s, tip_x + 3 * s, tip_y + 5 * s], fill=tail_tip_col)
+
+        # -----------------------------------------------------------------
+        # 2. OREJAS Y DETALLES EN LA CABECITA (Izquierda, sobre el botón)
+        # -----------------------------------------------------------------
+        head_cx = int(22 * s)
+        ear_col = skin.get("ear_color", (32, 26, 36, 255))
+        ear_inner = skin.get("ear_inner", (244, 114, 182, 255))
+        ear_border = skin.get("ear_border", (244, 114, 182, 200))
+
+        if animal_type == "gato":
+            # Orejitas puntiagudas de gato arriba del botón
+            ear_w = 7 * s
+            ear_h = 9 * s
+            top_y = pad_y + 1 * s
+
+            # Oreja izquierda
+            e1 = [(head_cx - 13 * s, top_y + 3 * s),
+                  (head_cx - 8 * s, top_y - ear_h),
+                  (head_cx - 2 * s, top_y)]
+            draw.polygon(e1, fill=ear_col, outline=ear_border)
+            e1_in = [(head_cx - 11 * s, top_y + 2 * s),
+                     (head_cx - 8 * s, top_y - ear_h + 3 * s),
+                     (head_cx - 4 * s, top_y)]
+            draw.polygon(e1_in, fill=ear_inner)
+
+            # Oreja derecha
+            e2 = [(head_cx + 2 * s, top_y),
+                  (head_cx + 8 * s, top_y - ear_h),
+                  (head_cx + 13 * s, top_y + 3 * s)]
+            draw.polygon(e2, fill=ear_col, outline=ear_border)
+            e2_in = [(head_cx + 4 * s, top_y),
+                     (head_cx + 8 * s, top_y - ear_h + 3 * s),
+                     (head_cx + 11 * s, top_y + 2 * s)]
+            draw.polygon(e2_in, fill=ear_inner)
+
+        elif animal_type == "perro":
+            # Orejitas caídas y redondeadas a los lados
+            top_y = pad_y + 2 * s
+            # Oreja izquierda caída
+            draw.rounded_rectangle([head_cx - 15 * s, top_y - 2 * s, head_cx - 6 * s, top_y + 12 * s],
+                                   radius=int(4 * s), fill=ear_col, outline=ear_border)
+            draw.rounded_rectangle([head_cx - 13 * s, top_y + 1 * s, head_cx - 8 * s, top_y + 10 * s],
+                                   radius=int(3 * s), fill=ear_inner)
+
+            # Oreja derecha caída
+            draw.rounded_rectangle([head_cx + 6 * s, top_y - 2 * s, head_cx + 15 * s, top_y + 12 * s],
+                                   radius=int(4 * s), fill=ear_col, outline=ear_border)
+            draw.rounded_rectangle([head_cx + 8 * s, top_y + 1 * s, head_cx + 13 * s, top_y + 10 * s],
+                                   radius=int(3 * s), fill=ear_inner)
+
+        elif animal_type == "elefante":
+            # Grandes orejas redondas de elefante
+            top_y = pad_y
+            draw.ellipse([head_cx - 19 * s, top_y - 2 * s, head_cx - 3 * s, top_y + 18 * s],
+                         fill=ear_col, outline=ear_border)
+            draw.ellipse([head_cx - 16 * s, top_y + 1 * s, head_cx - 6 * s, top_y + 15 * s],
+                         fill=ear_inner)
+
+            draw.ellipse([head_cx + 3 * s, top_y - 2 * s, head_cx + 19 * s, top_y + 18 * s],
+                         fill=ear_col, outline=ear_border)
+            draw.ellipse([head_cx + 6 * s, top_y + 1 * s, head_cx + 16 * s, top_y + 15 * s],
+                         fill=ear_inner)
+
+            # Trompita curvada hacia arriba a la izquierda del botón
+            trunk_pts = [
+                (head_cx - 8 * s, H // 2 + 6 * s),
+                (head_cx - 14 * s, H // 2 + 10 * s),
+                (head_cx - 18 * s, H // 2 + 4 * s),
+                (head_cx - 16 * s, H // 2 - 1 * s)
+            ]
+            draw.line(trunk_pts, fill=ear_col, width=max(2, int(4 * s)), joint="curve")
+            draw.ellipse([head_cx - 18 * s, H // 2 - 3 * s, head_cx - 14 * s, H // 2 + 1 * s],
+                         fill=ear_border)
+
     def render(self, ram, cpu, cpu_temp, gpu_util, gpu_temp,
                cpu_history, gpu_history, is_hovered, is_cleaning, skin):
         s = self.s
@@ -48,6 +185,9 @@ class VisorRenderer:
             [pad_x, pad_y, W - pad_x, H - pad_y],
             radius=r, fill=card_fill, outline=border_col, width=max(1, int(1.4 * s))
         )
+
+        # Accesorios animales: orejitas, trompa y colita con animación viva
+        self.draw_animal_accessories(draw, s, W, H, pad_x, pad_y, pill_h, r, skin)
 
         # Botón Rayo con halo y LED
         btn_cx = int(22 * s)

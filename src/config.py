@@ -579,6 +579,114 @@ BANDERAS = {
     }
 }
 
+# ==========================================
+# SKINS DE ANIMALES CON COLAS Y OREJITAS
+# ==========================================
+ANIMALES = {
+    "gato": {
+        "name": "🐱 Gato Curioso (Orejas + Cola)",
+        "animal": "gato",
+        "card_bg": (32, 26, 36, 255),
+        "card_bg_hover": (44, 36, 50, 255),
+        "card_border": (244, 114, 182, 200),
+        "card_border_hover": (251, 191, 36, 255),
+        "btn_bg": (42, 32, 48, 255),
+        "btn_halo": (244, 114, 182, 255),
+        "btn_halo_active": (251, 191, 36, 255),
+        "bolt_idle": (253, 230, 138, 255),
+        "bolt_active": (255, 255, 255, 255),
+        "led": (244, 114, 182, 255),
+        "led_halo": (244, 114, 182, 100),
+        "text_label": (243, 232, 255, 255),
+        "ram_text": (244, 114, 182, 255),
+        "ram_bar_bg": (60, 35, 65, 255),
+        "ram_bar_fill": (244, 114, 182, 255),
+        "divider": (85, 60, 95, 180),
+        "cpu_text": (251, 191, 36, 255),
+        "cpu_temp": (253, 230, 138, 255),
+        "cpu_wave_line": (251, 191, 36, 255),
+        "cpu_wave_fill": (251, 191, 36, 45),
+        "gpu_text": (192, 132, 252, 255),
+        "gpu_temp": (244, 114, 182, 255),
+        "gpu_wave_line": (192, 132, 252, 255),
+        "gpu_wave_fill": (192, 132, 252, 40),
+        "dots": (251, 191, 36, 255),
+        "ear_color": (32, 26, 36, 255),
+        "ear_inner": (244, 114, 182, 255),
+        "ear_border": (244, 114, 182, 200),
+        "tail_color": (244, 114, 182, 255),
+        "tail_tip": (255, 255, 255, 255)
+    },
+    "perro": {
+        "name": "🐶 Perro Juguetón (Orejas Caídas + Cola Alegre)",
+        "animal": "perro",
+        "card_bg": (38, 28, 22, 255),
+        "card_bg_hover": (52, 38, 30, 255),
+        "card_border": (217, 119, 6, 200),
+        "card_border_hover": (245, 158, 11, 255),
+        "btn_bg": (48, 34, 26, 255),
+        "btn_halo": (217, 119, 6, 255),
+        "btn_halo_active": (245, 158, 11, 255),
+        "bolt_idle": (254, 243, 199, 255),
+        "bolt_active": (255, 255, 255, 255),
+        "led": (245, 158, 11, 255),
+        "led_halo": (245, 158, 11, 100),
+        "text_label": (254, 243, 199, 255),
+        "ram_text": (245, 158, 11, 255),
+        "ram_bar_bg": (70, 45, 30, 255),
+        "ram_bar_fill": (245, 158, 11, 255),
+        "divider": (95, 65, 45, 180),
+        "cpu_text": (251, 191, 36, 255),
+        "cpu_temp": (254, 240, 138, 255),
+        "cpu_wave_line": (251, 191, 36, 255),
+        "cpu_wave_fill": (251, 191, 36, 45),
+        "gpu_text": (217, 119, 6, 255),
+        "gpu_temp": (251, 146, 60, 255),
+        "gpu_wave_line": (217, 119, 6, 255),
+        "gpu_wave_fill": (217, 119, 6, 40),
+        "dots": (245, 158, 11, 255),
+        "ear_color": (38, 28, 22, 255),
+        "ear_inner": (217, 119, 6, 255),
+        "ear_border": (217, 119, 6, 200),
+        "tail_color": (217, 119, 6, 255),
+        "tail_tip": (254, 243, 199, 255)
+    },
+    "elefante": {
+        "name": "🐘 Elefante Sabio (Trompa + Orejotas + Colita)",
+        "animal": "elefante",
+        "card_bg": (28, 34, 42, 255),
+        "card_bg_hover": (38, 46, 56, 255),
+        "card_border": (100, 116, 139, 200),
+        "card_border_hover": (148, 163, 184, 255),
+        "btn_bg": (34, 40, 50, 255),
+        "btn_halo": (148, 163, 184, 255),
+        "btn_halo_active": (56, 189, 248, 255),
+        "bolt_idle": (226, 232, 240, 255),
+        "bolt_active": (255, 255, 255, 255),
+        "led": (56, 189, 248, 255),
+        "led_halo": (56, 189, 248, 100),
+        "text_label": (226, 232, 240, 255),
+        "ram_text": (148, 163, 184, 255),
+        "ram_bar_bg": (51, 65, 85, 255),
+        "ram_bar_fill": (148, 163, 184, 255),
+        "divider": (71, 85, 105, 180),
+        "cpu_text": (56, 189, 248, 255),
+        "cpu_temp": (125, 211, 252, 255),
+        "cpu_wave_line": (56, 189, 248, 255),
+        "cpu_wave_fill": (56, 189, 248, 45),
+        "gpu_text": (165, 180, 252, 255),
+        "gpu_temp": (199, 210, 254, 255),
+        "gpu_wave_line": (165, 180, 252, 255),
+        "gpu_wave_fill": (165, 180, 252, 40),
+        "dots": (148, 163, 184, 255),
+        "ear_color": (38, 46, 56, 255),
+        "ear_inner": (148, 163, 184, 180),
+        "ear_border": (100, 116, 139, 200),
+        "tail_color": (100, 116, 139, 255),
+        "tail_tip": (30, 41, 59, 255)
+    }
+}
+
 DEFAULT_SKIN_ID = "cyberpunk"
 
 def get_skin(skin_id):
@@ -586,6 +694,8 @@ def get_skin(skin_id):
         return SKINS[skin_id]
     if skin_id in BANDERAS:
         return BANDERAS[skin_id]
+    if skin_id in ANIMALES:
+        return ANIMALES[skin_id]
     return SKINS[DEFAULT_SKIN_ID]
 
 def load_config():
