@@ -2,6 +2,30 @@ from PIL import Image, ImageDraw, ImageTk, ImageFont
 import math
 from .config import LOGICAL_WIDTH, LOGICAL_HEIGHT
 
+def bezier_cubic(p0, p1, p2, p3, steps=32):
+    """Calcula puntos a lo largo de una curva de Bézier cúbica de alta resolución."""
+    pts = []
+    for i in range(steps + 1):
+        t = i / float(steps)
+        u = 1.0 - t
+        tt = t * t
+        uu = u * u
+        x = (uu * u) * p0[0] + (3 * uu * t) * p1[0] + (3 * u * tt) * p2[0] + (tt * t) * p3[0]
+        y = (uu * u) * p0[1] + (3 * uu * t) * p1[1] + (3 * u * tt) * p2[1] + (tt * t) * p3[1]
+        pts.append((x, y))
+    return pts
+
+def draw_smooth_stroke(draw, points, width, color, tip_color=None, tip_radius=None):
+    """Traza un camino hiper-suave con extremos y juntas redondeadas sin quiebres ni polígonos toscos."""
+    r = width / 2.0
+    for p in points:
+        draw.ellipse([p[0] - r, p[1] - r, p[0] + r, p[1] + r], fill=color)
+    draw.line(points, fill=color, width=max(1, int(width)))
+    if tip_color and tip_radius and len(points) > 0:
+        tip_p = points[-1]
+        draw.ellipse([tip_p[0] - tip_radius, tip_p[1] - tip_radius,
+                      tip_p[0] + tip_radius, tip_p[1] + tip_radius], fill=tip_color)
+
 class VisorRenderer:
     def __init__(self, dpi_scale, render_scale=2):
         self.dpi = dpi_scale
@@ -36,55 +60,46 @@ class VisorRenderer:
 
         self.tail_anim_frame = (self.tail_anim_frame + 1) % 60
         # Movimiento oscilante suave para la colita
-        sway = math.sin(self.tail_anim_frame * (2 * math.pi / 30)) * (2.5 * s)
+        sway = math.sin(self.tail_anim_frame * (2 * math.pi / 30)) * (2.2 * s)
 
         # -----------------------------------------------------------------
-        # 1. COLA (A la derecha de la barra, curvada hacia arriba/adentro)
+        # 1. COLA (Curva Bézier cúbica continua, fluida y orgánica)
         # -----------------------------------------------------------------
-        tail_start_x = pill_x1 - 4 * s
-        tail_start_y = pad_top + pill_h // 2
         tail_col = skin.get("tail_color", (244, 114, 182, 255))
         tail_tip_col = skin.get("tail_tip", (255, 255, 255, 255))
 
         if animal_type == "gato":
-            # Colita de gato elegante curvándose suavemente con pompón en la punta
-            c1_x = pill_x1 + 8 * s
-            c1_y = tail_start_y - 4 * s + sway * 0.4
-            c2_x = pill_x1 + 10 * s + sway * 0.6
-            c2_y = pad_top + 2 * s
-            tip_x = pill_x1 + 3 * s + sway
-            tip_y = pad_top - 2 * s
+            # Colita de gato premium: curva suave en S con punta de algodón
+            tail_start = (pill_x1 - 4 * s, pad_top + pill_h // 2 + 2 * s)
+            ctrl1 = (pill_x1 + 13 * s + sway * 0.4, pad_top + pill_h // 2 + 1 * s)
+            ctrl2 = (pill_x1 + 14 * s + sway * 0.7, pad_top - 0.5 * s)
+            tip = (pill_x1 + 4.5 * s + sway, pad_top - 3.5 * s)
 
-            tail_points = [
-                (tail_start_x, tail_start_y),
-                (c1_x, c1_y),
-                (c2_x, c2_y),
-                (tip_x, tip_y)
-            ]
-            draw.line(tail_points, fill=tail_col, width=max(2, int(4.5 * s)), joint="curve")
-            draw.ellipse([tip_x - 3.5 * s, tip_y - 3.5 * s, tip_x + 3.5 * s, tip_y + 3.5 * s], fill=tail_tip_col)
+            cat_tail_pts = bezier_cubic(tail_start, ctrl1, ctrl2, tip, steps=36)
+            draw_smooth_stroke(draw, cat_tail_pts, width=5.0 * s, color=tail_col,
+                               tip_color=tail_tip_col, tip_radius=4.2 * s)
 
         elif animal_type == "perro":
-            # Colita alegre de perro moviéndose felizmente hacia arriba
-            c1_x = pill_x1 + 7 * s + sway * 0.5
-            c1_y = tail_start_y - 8 * s
-            tip_x = pill_x1 + 11 * s + sway
-            tip_y = pad_top - 1 * s
+            # Colita de perro peluda y alegre con curva continua
+            tail_start = (pill_x1 - 4 * s, pad_top + pill_h // 2 + 3 * s)
+            ctrl1 = (pill_x1 + 10 * s + sway * 0.5, pad_top + pill_h // 2 - 2 * s)
+            ctrl2 = (pill_x1 + 15 * s + sway * 0.8, pad_top + 2.5 * s)
+            tip = (pill_x1 + 10.5 * s + sway * 1.2, pad_top - 1.5 * s)
 
-            draw.line([(tail_start_x, tail_start_y + 2 * s), (c1_x, c1_y), (tip_x, tip_y)],
-                      fill=tail_col, width=max(2, int(5.5 * s)), joint="curve")
-            draw.ellipse([tip_x - 4 * s, tip_y - 4 * s, tip_x + 4 * s, tip_y + 4 * s], fill=tail_tip_col)
+            dog_tail_pts = bezier_cubic(tail_start, ctrl1, ctrl2, tip, steps=36)
+            draw_smooth_stroke(draw, dog_tail_pts, width=5.6 * s, color=tail_col,
+                               tip_color=tail_tip_col, tip_radius=4.5 * s)
 
         elif animal_type == "elefante":
-            # Colita de elefante con mechón
-            c1_x = pill_x1 + 6 * s
-            c1_y = tail_start_y + 3 * s + sway * 0.3
-            tip_x = pill_x1 + 8 * s + sway * 0.6
-            tip_y = tail_start_y + 10 * s
+            # Colita curva de elefante con mechón
+            tail_start = (pill_x1 - 4 * s, pad_top + pill_h // 2 + 1 * s)
+            ctrl1 = (pill_x1 + 6 * s, pad_top + pill_h // 2 + 3 * s + sway * 0.3)
+            ctrl2 = (pill_x1 + 9 * s, pad_top + pill_h // 2 + 8 * s + sway * 0.6)
+            tip = (pill_x1 + 8 * s, pad_top + pill_h // 2 + 12 * s + sway)
 
-            draw.line([(tail_start_x, tail_start_y), (c1_x, c1_y), (tip_x, tip_y)],
-                      fill=tail_col, width=max(2, int(3.5 * s)), joint="curve")
-            draw.ellipse([tip_x - 3 * s, tip_y - 1 * s, tip_x + 3 * s, tip_y + 5 * s], fill=tail_tip_col)
+            ele_tail_pts = bezier_cubic(tail_start, ctrl1, ctrl2, tip, steps=30)
+            draw_smooth_stroke(draw, ele_tail_pts, width=3.5 * s, color=tail_col,
+                               tip_color=tail_tip_col, tip_radius=3.5 * s)
 
         # -----------------------------------------------------------------
         # 2. OREJAS Y DETALLES EN LA CABECITA (Izquierda, sobre el botón)
@@ -96,58 +111,56 @@ class VisorRenderer:
         top_y = pad_top + 1 * s
 
         if animal_type == "gato":
-            # Orejitas puntiagudas de gato
-            ear_h = 7.5 * s
-            e1 = [(head_cx - 12 * s, top_y + 2 * s),
-                  (head_cx - 7 * s, top_y - ear_h),
-                  (head_cx - 2 * s, top_y)]
-            draw.polygon(e1, fill=ear_col, outline=ear_border)
-            e1_in = [(head_cx - 10 * s, top_y + 1 * s),
-                     (head_cx - 7 * s, top_y - ear_h + 2.5 * s),
-                     (head_cx - 3.5 * s, top_y)]
-            draw.polygon(e1_in, fill=ear_inner)
-
-            e2 = [(head_cx + 2 * s, top_y),
-                  (head_cx + 7 * s, top_y - ear_h),
-                  (head_cx + 12 * s, top_y + 2 * s)]
-            draw.polygon(e2, fill=ear_col, outline=ear_border)
-            e2_in = [(head_cx + 3.5 * s, top_y),
-                     (head_cx + 7 * s, top_y - ear_h + 2.5 * s),
-                     (head_cx + 10 * s, top_y + 1 * s)]
-            draw.polygon(e2_in, fill=ear_inner)
+            # Orejas de gato estilizadas con curvas suaves y puntas pulidas
+            for side in [-1, 1]:
+                cx_ear = head_cx + side * 7.5 * s
+                ear_poly = [
+                    (cx_ear - side * 5.5 * s, top_y + 1.5 * s),
+                    (cx_ear, top_y - 8.2 * s),
+                    (cx_ear + side * 5.5 * s, top_y + 1.5 * s)
+                ]
+                draw.polygon(ear_poly, fill=ear_col, outline=ear_border)
+                ear_inner_poly = [
+                    (cx_ear - side * 3.5 * s, top_y + 0.5 * s),
+                    (cx_ear, top_y - 5.8 * s),
+                    (cx_ear + side * 3.5 * s, top_y + 0.5 * s)
+                ]
+                draw.polygon(ear_inner_poly, fill=ear_inner)
+                # Suavizar la punta superior redondeada
+                draw.ellipse([cx_ear - 1.2 * s, top_y - 8.6 * s, cx_ear + 1.2 * s, top_y - 6.2 * s], fill=ear_border)
 
         elif animal_type == "perro":
-            # Orejitas caídas y redondeadas a los lados
-            draw.rounded_rectangle([head_cx - 15 * s, top_y - 2 * s, head_cx - 6 * s, top_y + 12 * s],
-                                   radius=int(4 * s), fill=ear_col, outline=ear_border)
-            draw.rounded_rectangle([head_cx - 13 * s, top_y + 1 * s, head_cx - 8 * s, top_y + 10 * s],
+            # Orejitas caídas sedosas con esquinas redondeadas naturales
+            draw.rounded_rectangle([head_cx - 15 * s, top_y - 3 * s, head_cx - 5 * s, top_y + 13 * s],
+                                   radius=int(5 * s), fill=ear_col, outline=ear_border, width=int(1.2 * s))
+            draw.rounded_rectangle([head_cx - 13 * s, top_y + 0 * s, head_cx - 7 * s, top_y + 11 * s],
                                    radius=int(3 * s), fill=ear_inner)
 
-            draw.rounded_rectangle([head_cx + 6 * s, top_y - 2 * s, head_cx + 15 * s, top_y + 12 * s],
-                                   radius=int(4 * s), fill=ear_col, outline=ear_border)
-            draw.rounded_rectangle([head_cx + 8 * s, top_y + 1 * s, head_cx + 13 * s, top_y + 10 * s],
+            draw.rounded_rectangle([head_cx + 5 * s, top_y - 3 * s, head_cx + 15 * s, top_y + 13 * s],
+                                   radius=int(5 * s), fill=ear_col, outline=ear_border, width=int(1.2 * s))
+            draw.rounded_rectangle([head_cx + 7 * s, top_y + 0 * s, head_cx + 13 * s, top_y + 11 * s],
                                    radius=int(3 * s), fill=ear_inner)
 
         elif animal_type == "elefante":
             # Grandes orejas redondeadas de elefante
-            draw.ellipse([head_cx - 18 * s, top_y - 3 * s, head_cx - 2 * s, top_y + 17 * s],
-                         fill=ear_col, outline=ear_border)
-            draw.ellipse([head_cx - 15 * s, top_y - 0 * s, head_cx - 5 * s, top_y + 14 * s],
+            draw.ellipse([head_cx - 17 * s, top_y - 4 * s, head_cx - 1 * s, top_y + 16 * s],
+                         fill=ear_col, outline=ear_border, width=int(1.2 * s))
+            draw.ellipse([head_cx - 14 * s, top_y - 1 * s, head_cx - 4 * s, top_y + 13 * s],
                          fill=ear_inner)
 
-            draw.ellipse([head_cx + 2 * s, top_y - 3 * s, head_cx + 18 * s, top_y + 17 * s],
-                         fill=ear_col, outline=ear_border)
-            draw.ellipse([head_cx + 5 * s, top_y - 0 * s, head_cx + 15 * s, top_y + 14 * s],
+            draw.ellipse([head_cx + 1 * s, top_y - 4 * s, head_cx + 17 * s, top_y + 16 * s],
+                         fill=ear_col, outline=ear_border, width=int(1.2 * s))
+            draw.ellipse([head_cx + 4 * s, top_y - 1 * s, head_cx + 14 * s, top_y + 13 * s],
                          fill=ear_inner)
 
-            # Trompita curvada hacia arriba a la izquierda del botón
-            trunk_pts = [
-                (head_cx - 8 * s, pad_top + pill_h // 2 + 5 * s),
-                (head_cx - 13 * s, pad_top + pill_h // 2 + 8 * s),
-                (head_cx - 16 * s, pad_top + pill_h // 2 + 3 * s),
-                (head_cx - 14 * s, pad_top + pill_h // 2 - 2 * s)
-            ]
-            draw.line(trunk_pts, fill=ear_col, width=max(2, int(4 * s)), joint="curve")
+            # Trompita con curva Bézier cúbica suave y redondeada
+            trunk_p0 = (head_cx - 8 * s, pad_top + pill_h // 2 + 5 * s)
+            trunk_p1 = (head_cx - 15 * s, pad_top + pill_h // 2 + 9 * s)
+            trunk_p2 = (head_cx - 18 * s, pad_top + pill_h // 2 - 2 * s)
+            trunk_p3 = (head_cx - 12 * s, pad_top + pill_h // 2 - 3 * s)
+            trunk_pts = bezier_cubic(trunk_p0, trunk_p1, trunk_p2, trunk_p3, steps=30)
+            draw_smooth_stroke(draw, trunk_pts, width=4.5 * s, color=ear_border,
+                               tip_color=(56, 189, 248, 255), tip_radius=2.2 * s)
 
     def render(self, ram, cpu, cpu_temp, gpu_util, gpu_temp,
                cpu_history, gpu_history, is_hovered, is_cleaning, skin):
@@ -162,7 +175,7 @@ class VisorRenderer:
         # Márgenes seguros para que las orejitas y la colita nunca se recorten
         pad_left = 18 * s
         pad_right = 26 * s
-        pad_top = 8 * s
+        pad_top = 9 * s
         pad_bottom = 3 * s
 
         pill_x0 = pad_left
