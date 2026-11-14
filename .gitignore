@@ -17,3 +17,6 @@ env/
 
 # Herramientas externas (repositorio independiente)
 herramientas/
+
+# Configuracion local del usuario
+config.json
