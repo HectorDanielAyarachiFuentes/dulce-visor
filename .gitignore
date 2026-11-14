@@ -1,0 +1,19 @@
+# Python bytecode y cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# IDE y sistema
+.vscode/
+.idea/
+*.swp
+*.tmp
+
+# Herramientas externas (repositorio independiente)
+herramientas/
