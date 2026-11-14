@@ -580,11 +580,11 @@ BANDERAS = {
 }
 
 # ==========================================
-# SKINS DE ANIMALES CON COLAS Y OREJITAS
+# SKINS DE ANIMALES CON OREJITAS KAWAII PREMIUM
 # ==========================================
 ANIMALES = {
     "gato": {
-        "name": "🐱 Gato Curioso (Orejas + Cola)",
+        "name": "🐱 Gato Neko (Orejitas Kawaii Curvas)",
         "animal": "gato",
         "card_bg": (32, 26, 36, 255),
         "card_bg_hover": (44, 36, 50, 255),
@@ -613,12 +613,10 @@ ANIMALES = {
         "dots": (251, 191, 36, 255),
         "ear_color": (32, 26, 36, 255),
         "ear_inner": (244, 114, 182, 255),
-        "ear_border": (244, 114, 182, 200),
-        "tail_color": (244, 114, 182, 255),
-        "tail_tip": (255, 255, 255, 255)
+        "ear_border": (244, 114, 182, 220),
     },
     "perro": {
-        "name": "🐶 Perro Juguetón (Orejas Caídas + Cola Alegre)",
+        "name": "🐶 Perro Puppy (Orejas Caídas Suaves)",
         "animal": "perro",
         "card_bg": (38, 28, 22, 255),
         "card_bg_hover": (52, 38, 30, 255),
@@ -647,12 +645,10 @@ ANIMALES = {
         "dots": (245, 158, 11, 255),
         "ear_color": (38, 28, 22, 255),
         "ear_inner": (217, 119, 6, 255),
-        "ear_border": (217, 119, 6, 200),
-        "tail_color": (217, 119, 6, 255),
-        "tail_tip": (254, 243, 199, 255)
+        "ear_border": (217, 119, 6, 220),
     },
     "elefante": {
-        "name": "🐘 Elefante Sabio (Trompa + Orejotas + Colita)",
+        "name": "🐘 Elefante Sabio (Orejotas Grandes Redondas)",
         "animal": "elefante",
         "card_bg": (28, 34, 42, 255),
         "card_bg_hover": (38, 46, 56, 255),
@@ -679,11 +675,41 @@ ANIMALES = {
         "gpu_wave_line": (165, 180, 252, 255),
         "gpu_wave_fill": (165, 180, 252, 40),
         "dots": (148, 163, 184, 255),
-        "ear_color": (38, 46, 56, 255),
+        "ear_color": (28, 34, 42, 255),
         "ear_inner": (148, 163, 184, 180),
-        "ear_border": (100, 116, 139, 200),
-        "tail_color": (100, 116, 139, 255),
-        "tail_tip": (30, 41, 59, 255)
+        "ear_border": (100, 116, 139, 220),
+    },
+    "jirafa": {
+        "name": "🦒 Jirafa Elegante (Cuernitos + Orejas Hoja)",
+        "animal": "jirafa",
+        "card_bg": (40, 30, 18, 255),
+        "card_bg_hover": (52, 40, 24, 255),
+        "card_border": (245, 158, 11, 200),
+        "card_border_hover": (251, 191, 36, 255),
+        "btn_bg": (48, 36, 22, 255),
+        "btn_halo": (245, 158, 11, 255),
+        "btn_halo_active": (251, 191, 36, 255),
+        "bolt_idle": (254, 240, 138, 255),
+        "bolt_active": (255, 255, 255, 255),
+        "led": (245, 158, 11, 255),
+        "led_halo": (245, 158, 11, 100),
+        "text_label": (254, 243, 199, 255),
+        "ram_text": (245, 158, 11, 255),
+        "ram_bar_bg": (70, 50, 28, 255),
+        "ram_bar_fill": (245, 158, 11, 255),
+        "divider": (95, 70, 40, 180),
+        "cpu_text": (251, 191, 36, 255),
+        "cpu_temp": (254, 240, 138, 255),
+        "cpu_wave_line": (251, 191, 36, 255),
+        "cpu_wave_fill": (251, 191, 36, 45),
+        "gpu_text": (217, 119, 6, 255),
+        "gpu_temp": (251, 146, 60, 255),
+        "gpu_wave_line": (217, 119, 6, 255),
+        "gpu_wave_fill": (217, 119, 6, 40),
+        "dots": (251, 191, 36, 255),
+        "ear_color": (40, 30, 18, 255),
+        "ear_inner": (245, 158, 11, 255),
+        "ear_border": (245, 158, 11, 220),
     }
 }
 

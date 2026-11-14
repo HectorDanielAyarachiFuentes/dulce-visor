@@ -144,7 +144,7 @@ def show_native_context_menu(hwnd, current_skin_id, skins_dict, banderas_dict, a
             flags = MF_STRING | (MF_CHECKED if b_key == current_skin_id else MF_UNCHECKED)
             user32.AppendMenuW(menu_banderas, flags, c_id, b_data["name"])
 
-        # 3. Submenú de Animales con Cola y Orejitas (3001+)
+        # 3. Submenú de Animales Kawaii (3001+)
         animal_id_start = 3001
         for idx, (a_key, a_data) in enumerate(animales_dict.items()):
             c_id = animal_id_start + idx
@@ -158,7 +158,7 @@ def show_native_context_menu(hwnd, current_skin_id, skins_dict, banderas_dict, a
         user32.AppendMenuW(hmenu, MF_SEPARATOR, 0, None)
 
         # Agregar los tres submenús
-        user32.AppendMenuW(hmenu, MF_POPUP, ctypes.cast(menu_animales, ctypes.c_void_p).value, "🐾 Animales con Cola (3)")
+        user32.AppendMenuW(hmenu, MF_POPUP, ctypes.cast(menu_animales, ctypes.c_void_p).value, "🐾 Animales Kawaii (4)")
         user32.AppendMenuW(hmenu, MF_POPUP, ctypes.cast(menu_skins, ctypes.c_void_p).value, "🎨 Temas y Skins (10)")
         user32.AppendMenuW(hmenu, MF_POPUP, ctypes.cast(menu_banderas, ctypes.c_void_p).value, "🚩 Banderas de Países (10)")
 
