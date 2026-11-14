@@ -2,7 +2,11 @@ import tkinter as tk
 import ctypes
 from collections import deque
 
-from .config import LOGICAL_WIDTH, LOGICAL_HEIGHT, HISTORY_LEN, COLORS, load_config, save_config
+from .config import (
+    LOGICAL_WIDTH, LOGICAL_HEIGHT, HISTORY_LEN,
+    SKINS, BANDERAS, DEFAULT_SKIN_ID, get_skin,
+    load_config, save_config
+)
 from .window import (
     enable_dpi_awareness, get_dpi_scale, get_taskbar_pos,
     is_foreground_fullscreen, apply_topmost_toolwindow,
@@ -31,7 +35,12 @@ class DulceVisor(tk.Tk):
         self.width = int(self.logical_w * self.dpi)
         self.height = int(self.logical_h * self.dpi)
 
-        self.trans_color = COLORS["trans"]
+        # Cargar skin guardada
+        saved_cfg = load_config()
+        self.current_skin_id = saved_cfg.get("skin", DEFAULT_SKIN_ID)
+        self.skin = get_skin(self.current_skin_id)
+
+        self.trans_color = '#020304'
         self.wm_attributes('-transparentcolor', self.trans_color)
         self.config(bg=self.trans_color)
 
@@ -152,12 +161,22 @@ class DulceVisor(tk.Tk):
     def end_drag(self, event):
         save_config({"x": self.winfo_x(), "y": self.winfo_y()})
 
+    def change_skin(self, new_skin_id):
+        self.current_skin_id = new_skin_id
+        self.skin = get_skin(new_skin_id)
+        save_config({"skin": new_skin_id})
+        self.render_frame()
+
     def show_context_menu(self):
         hwnd = self.hwnd or self.winfo_id()
         show_native_context_menu(
-            hwnd,
+            hwnd=hwnd,
+            current_skin_id=self.current_skin_id,
+            skins_dict=SKINS,
+            banderas_dict=BANDERAS,
             on_clean_cb=self.on_clean_click,
             on_recenter_cb=self.recenter_on_taskbar,
+            on_change_skin_cb=self.change_skin,
             on_close_cb=self.destroy
         )
 
@@ -182,7 +201,8 @@ class DulceVisor(tk.Tk):
             ram=ram, cpu=cpu, cpu_temp=cpu_temp,
             gpu_util=gpu_util, gpu_temp=gpu_temp,
             cpu_history=self.cpu_history, gpu_history=self.gpu_history,
-            is_hovered=self.is_hovered, is_cleaning=self.is_cleaning
+            is_hovered=self.is_hovered, is_cleaning=self.is_cleaning,
+            skin=self.skin
         )
 
         if not self.canvas_img_item:

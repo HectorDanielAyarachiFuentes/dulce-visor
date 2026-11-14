@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageTk, ImageFont
-from .config import LOGICAL_WIDTH, LOGICAL_HEIGHT, COLORS
+from .config import LOGICAL_WIDTH, LOGICAL_HEIGHT
 
 class VisorRenderer:
     def __init__(self, dpi_scale, render_scale=2):
@@ -26,7 +26,7 @@ class VisorRenderer:
             self.font_title = ImageFont.load_default()
 
     def render(self, ram, cpu, cpu_temp, gpu_util, gpu_temp,
-               cpu_history, gpu_history, is_hovered, is_cleaning):
+               cpu_history, gpu_history, is_hovered, is_cleaning, skin):
         s = self.s
         W = self.canvas_w
         H = self.canvas_h
@@ -40,9 +40,9 @@ class VisorRenderer:
         pill_h = H - 2 * pad_y
         r = pill_h // 2
 
-        # Cápsula Obsidian
-        card_fill = COLORS["card_bg_hover"] if is_hovered else COLORS["card_bg"]
-        border_col = COLORS["card_border_hover"] if is_hovered else COLORS["card_border"]
+        # Cápsula con color de la skin seleccionada
+        card_fill = skin["card_bg_hover"] if is_hovered else skin["card_bg"]
+        border_col = skin["card_border_hover"] if is_hovered else skin["card_border"]
 
         draw.rounded_rectangle(
             [pad_x, pad_y, W - pad_x, H - pad_y],
@@ -54,9 +54,9 @@ class VisorRenderer:
         btn_cy = int((LOGICAL_HEIGHT / 2) * s)
         btn_r = int(13.5 * s)
 
-        halo_col = COLORS["btn_halo_active"] if is_cleaning else COLORS["btn_halo"]
+        halo_col = skin["btn_halo_active"] if is_cleaning else skin["btn_halo"]
         draw.ellipse([btn_cx - btn_r, btn_cy - btn_r, btn_cx + btn_r, btn_cy + btn_r],
-                     fill=COLORS["btn_bg"], outline=halo_col, width=max(1, int(1.5 * s)))
+                     fill=skin["btn_bg"], outline=halo_col, width=max(1, int(1.5 * s)))
 
         cx, cy = btn_cx, btn_cy
         bolt_points = [
@@ -67,37 +67,37 @@ class VisorRenderer:
             (cx + 4.5 * s, cy - 0 * s),
             (cx + 0.5 * s, cy - 0 * s),
         ]
-        bolt_col = COLORS["bolt_active"] if (is_cleaning or is_hovered) else COLORS["bolt_idle"]
+        bolt_col = skin["bolt_active"] if (is_cleaning or is_hovered) else skin["bolt_idle"]
         draw.polygon(bolt_points, fill=bolt_col)
 
-        # LED Verde
+        # LED indicador
         led_x = btn_cx + int(9.5 * s)
         led_y = btn_cy + int(9.5 * s)
         led_r = int(3.6 * s)
-        draw.ellipse([led_x - led_r, led_y - led_r, led_x + led_r, led_y + led_r], fill=COLORS["led"])
+        draw.ellipse([led_x - led_r, led_y - led_r, led_x + led_r, led_y + led_r], fill=skin["led"])
         draw.ellipse([led_x - led_r - 2*s, led_y - led_r - 2*s, led_x + led_r + 2*s, led_y + led_r + 2*s],
-                     outline=COLORS["led_halo"], width=int(1.4 * s))
+                     outline=skin["led_halo"], width=int(1.4 * s))
 
         # RAM
-        draw.text((int(48 * s), int(7 * s)), "RAM", fill=COLORS["text_label"], font=self.font_title)
-        draw.text((int(82 * s), int(7 * s)), f"{ram}%", fill=COLORS["ram_text"], font=self.font_main)
+        draw.text((int(48 * s), int(7 * s)), "RAM", fill=skin["text_label"], font=self.font_title)
+        draw.text((int(82 * s), int(7 * s)), f"{ram}%", fill=skin["ram_text"], font=self.font_main)
 
         ram_bar_w = int(58 * s)
         ram_bar_fill = int((ram / 100.0) * ram_bar_w)
         draw.rounded_rectangle([int(50 * s), int(27 * s), int(50 * s) + ram_bar_w, int(29 * s)],
-                               radius=1*s, fill=COLORS["ram_bar_bg"])
+                               radius=1*s, fill=skin["ram_bar_bg"])
         draw.rounded_rectangle([int(50 * s), int(27 * s), int(50 * s) + ram_bar_fill, int(29 * s)],
-                               radius=1*s, fill=COLORS["ram_bar_fill"])
+                               radius=1*s, fill=skin["ram_bar_fill"])
 
         # Divisor 1
         x_div1 = int(126 * s)
         for y_dot in range(int(8 * s), int((LOGICAL_HEIGHT - 8) * s), int(4 * s)):
-            draw.point((x_div1, y_dot), fill=COLORS["divider"])
+            draw.point((x_div1, y_dot), fill=skin["divider"])
 
         # CPU + Onda
-        draw.text((int(140 * s), int(6 * s)), "CPU", fill=COLORS["text_label"], font=self.font_title)
-        draw.text((int(175 * s), int(6 * s)), f"{cpu}%", fill=COLORS["cpu_text"], font=self.font_main)
-        draw.text((int(215 * s), int(6 * s)), f"{cpu_temp}°", fill=COLORS["cpu_temp"], font=self.font_main)
+        draw.text((int(140 * s), int(6 * s)), "CPU", fill=skin["text_label"], font=self.font_title)
+        draw.text((int(175 * s), int(6 * s)), f"{cpu}%", fill=skin["cpu_text"], font=self.font_main)
+        draw.text((int(215 * s), int(6 * s)), f"{cpu_temp}°", fill=skin["cpu_temp"], font=self.font_main)
 
         history_len = len(cpu_history)
         wave1_pts = []
@@ -112,18 +112,18 @@ class VisorRenderer:
 
         if len(wave1_pts) >= 2:
             fill_poly = [(wave1_pts[0][0], w_base_y)] + wave1_pts + [(wave1_pts[-1][0], w_base_y)]
-            draw.polygon(fill_poly, fill=COLORS["cpu_wave_fill"])
-            draw.line(wave1_pts, fill=COLORS["cpu_wave_line"], width=max(1, int(1.8 * s)))
+            draw.polygon(fill_poly, fill=skin["cpu_wave_fill"])
+            draw.line(wave1_pts, fill=skin["cpu_wave_line"], width=max(1, int(1.8 * s)))
 
         # Divisor 2
         x_div2 = int(258 * s)
         for y_dot in range(int(8 * s), int((LOGICAL_HEIGHT - 8) * s), int(4 * s)):
-            draw.point((x_div2, y_dot), fill=COLORS["divider"])
+            draw.point((x_div2, y_dot), fill=skin["divider"])
 
         # GPU + Onda
-        draw.text((int(272 * s), int(6 * s)), "GPU", fill=COLORS["text_label"], font=self.font_title)
-        draw.text((int(308 * s), int(6 * s)), f"{gpu_util}%", fill=COLORS["gpu_text"], font=self.font_main)
-        draw.text((int(344 * s), int(6 * s)), f"{gpu_temp}°", fill=COLORS["gpu_temp"], font=self.font_main)
+        draw.text((int(272 * s), int(6 * s)), "GPU", fill=skin["text_label"], font=self.font_title)
+        draw.text((int(308 * s), int(6 * s)), f"{gpu_util}%", fill=skin["gpu_text"], font=self.font_main)
+        draw.text((int(344 * s), int(6 * s)), f"{gpu_temp}°", fill=skin["gpu_temp"], font=self.font_main)
 
         wave2_pts = []
         w2_start_x = int(272 * s)
@@ -137,14 +137,14 @@ class VisorRenderer:
 
         if len(wave2_pts) >= 2:
             fill2_poly = [(wave2_pts[0][0], w2_base_y)] + wave2_pts + [(wave2_pts[-1][0], w2_base_y)]
-            draw.polygon(fill2_poly, fill=COLORS["gpu_wave_fill"])
-            draw.line(wave2_pts, fill=COLORS["gpu_wave_line"], width=max(1, int(1.8 * s)))
+            draw.polygon(fill2_poly, fill=skin["gpu_wave_fill"])
+            draw.line(wave2_pts, fill=skin["gpu_wave_line"], width=max(1, int(1.8 * s)))
 
         # Tres puntos
         more_x = int((LOGICAL_WIDTH - 26) * s)
-        draw.ellipse([more_x, 12 * s, more_x + 2.5*s, 14.5 * s], fill=COLORS["dots"])
-        draw.ellipse([more_x, 18 * s, more_x + 2.5*s, 20.5 * s], fill=COLORS["dots"])
-        draw.ellipse([more_x, 24 * s, more_x + 2.5*s, 26.5 * s], fill=COLORS["dots"])
+        draw.ellipse([more_x, 12 * s, more_x + 2.5*s, 14.5 * s], fill=skin["dots"])
+        draw.ellipse([more_x, 18 * s, more_x + 2.5*s, 20.5 * s], fill=skin["dots"])
+        draw.ellipse([more_x, 24 * s, more_x + 2.5*s, 26.5 * s], fill=skin["dots"])
 
         final_img = self.raw_img.resize((self.width, self.height), Image.Resampling.LANCZOS)
         return ImageTk.PhotoImage(final_img)

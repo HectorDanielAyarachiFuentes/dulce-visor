@@ -21,9 +21,12 @@ TPM_RIGHTBUTTON = 0x0002
 TPM_RETURNCMD = 0x0100
 TPM_BOTTOMALIGN = 0x0020
 MF_STRING = 0x0000
+MF_POPUP = 0x0010
 MF_SEPARATOR = 0x0800
+MF_CHECKED = 0x0008
+MF_UNCHECKED = 0x0000
 
-# 64-bit type signatures (crítico para evitar truncamiento en Windows x64)
+# 64-bit type signatures
 user32.SetWindowPos.argtypes = [
     wintypes.HWND,
     wintypes.HWND,
@@ -40,6 +43,10 @@ user32.GetWindowLongW.restype = ctypes.c_long
 
 user32.SetWindowLongW.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_long]
 user32.SetWindowLongW.restype = ctypes.c_long
+
+user32.CreatePopupMenu.restype = wintypes.HMENU
+user32.AppendMenuW.argtypes = [wintypes.HMENU, ctypes.c_uint, ctypes.c_size_t, wintypes.LPCWSTR]
+user32.AppendMenuW.restype = wintypes.BOOL
 
 class RECT(ctypes.Structure):
     _fields_ = [
@@ -79,7 +86,6 @@ def get_taskbar_pos():
     return None
 
 def is_foreground_fullscreen(screen_w, screen_h):
-    """Detecta si la aplicación activa está en pantalla completa real (ej. juegos)."""
     try:
         fg = user32.GetForegroundWindow()
         if not fg:
@@ -90,13 +96,11 @@ def is_foreground_fullscreen(screen_w, screen_h):
             return False
         rect = RECT()
         user32.GetWindowRect(fg, ctypes.byref(rect))
-        # Debe cubrir completamente la resolución (0, 0, screen_w, screen_h)
         return rect.left <= 0 and rect.top <= 0 and rect.right >= screen_w and rect.bottom >= screen_h
     except Exception:
         return False
 
 def apply_topmost_toolwindow(hwnd):
-    """Aplica atributos Win32 para no aparecer en Alt+Tab, no robar foco y mantenerse topmost."""
     try:
         h = wintypes.HWND(hwnd)
         ex_style = user32.GetWindowLongW(h, GWL_EXSTYLE)
@@ -106,20 +110,48 @@ def apply_topmost_toolwindow(hwnd):
         pass
 
 def reassert_topmost(hwnd):
-    """Reafirma Z-order sobre la barra de tareas garantizando 64-bit handle correcto."""
     try:
         h = wintypes.HWND(hwnd)
         user32.SetWindowPos(h, HWND_TOPMOST, 0, 0, 0, 0, SWP_FLAGS)
     except Exception:
         pass
 
-def show_native_context_menu(hwnd, on_clean_cb, on_recenter_cb, on_close_cb):
-    """Muestra menú contextual nativo que se cierra automáticamente al hacer clic fuera."""
+def show_native_context_menu(hwnd, current_skin_id, skins_dict, banderas_dict,
+                             on_clean_cb, on_recenter_cb, on_change_skin_cb, on_close_cb):
+    """Muestra menú contextual nativo con submenús de Skins y Banderas."""
     try:
         h = wintypes.HWND(hwnd)
         hmenu = user32.CreatePopupMenu()
+        menu_skins = user32.CreatePopupMenu()
+        menu_banderas = user32.CreatePopupMenu()
+
+        cmd_map = {}
+
+        # 1. Submenú de Skins (1001+)
+        skin_id_start = 1001
+        for idx, (s_key, s_data) in enumerate(skins_dict.items()):
+            c_id = skin_id_start + idx
+            cmd_map[c_id] = s_key
+            flags = MF_STRING | (MF_CHECKED if s_key == current_skin_id else MF_UNCHECKED)
+            user32.AppendMenuW(menu_skins, flags, c_id, s_data["name"])
+
+        # 2. Submenú de Banderas (2001+)
+        bandera_id_start = 2001
+        for idx, (b_key, b_data) in enumerate(banderas_dict.items()):
+            c_id = bandera_id_start + idx
+            cmd_map[c_id] = b_key
+            flags = MF_STRING | (MF_CHECKED if b_key == current_skin_id else MF_UNCHECKED)
+            user32.AppendMenuW(menu_banderas, flags, c_id, b_data["name"])
+
+        # Elementos principales
         user32.AppendMenuW(hmenu, MF_STRING, 101, "⚡ Optimizar Memoria RAM")
         user32.AppendMenuW(hmenu, MF_STRING, 102, "📌 Re-centrar en la barra")
+        user32.AppendMenuW(hmenu, MF_SEPARATOR, 0, None)
+
+        # Agregar los dos submenús
+        user32.AppendMenuW(hmenu, MF_POPUP, ctypes.cast(menu_skins, ctypes.c_void_p).value, "🎨 Temas y Skins (10)")
+        user32.AppendMenuW(hmenu, MF_POPUP, ctypes.cast(menu_banderas, ctypes.c_void_p).value, "🚩 Banderas de Países (10)")
+
         user32.AppendMenuW(hmenu, MF_SEPARATOR, 0, None)
         user32.AppendMenuW(hmenu, MF_STRING, 103, "❌ Cerrar Dulce-Visor")
 
@@ -131,6 +163,9 @@ def show_native_context_menu(hwnd, on_clean_cb, on_recenter_cb, on_close_cb):
             hmenu, TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_BOTTOMALIGN,
             pt.x, pt.y, 0, h, None
         )
+
+        user32.DestroyMenu(menu_skins)
+        user32.DestroyMenu(menu_banderas)
         user32.DestroyMenu(hmenu)
 
         if cmd == 101:
@@ -139,6 +174,9 @@ def show_native_context_menu(hwnd, on_clean_cb, on_recenter_cb, on_close_cb):
             on_recenter_cb()
         elif cmd == 103:
             on_close_cb()
+        elif cmd in cmd_map:
+            on_change_skin_cb(cmd_map[cmd])
+
     except Exception:
         pass
 
